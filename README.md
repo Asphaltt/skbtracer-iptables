@@ -45,6 +45,14 @@ int BPF_KPROBE(ipt_do_table_old, struct sk_buff *skb,
 }
 ```
 
+Note: confirm that you can kprobe the two functions:
+
+```bash
+# bpftrace -l 'k:ip*t_do_table'
+kprobe:ip6t_do_table
+kprobe:ipt_do_table
+```
+
 ## Build and run
 
 Building requires clang and llvm.
