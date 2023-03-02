@@ -202,7 +202,8 @@ func (e *perfEvent) outputTraceInfo() string {
 		iptName := nullTerminatedStr(e.TableName[:])
 		hook := _get(hookNames, uint32(e.Hook), fmt.Sprintf("~UNK~[%d]", e.Hook))
 		verdict := _get(nfVerdictName, e.Verdict, fmt.Sprintf("~UNK~[%d]", e.Verdict))
-		iptables = fmt.Sprintf("pf=%s, table=%s hook=%s verdict=%s", pf, iptName, hook, verdict)
+		cost := time.Duration(e.IptDelay)
+		iptables = fmt.Sprintf("pf=%s, table=%s hook=%s verdict=%s cost=%s", pf, iptName, hook, verdict, cost)
 	}
 
 	pktType := e.outputPktType(e.PktType)

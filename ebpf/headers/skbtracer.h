@@ -160,7 +160,7 @@ struct ipt_do_table_args {
 
 struct {
     __uint(type, BPF_MAP_TYPE_HASH);
-    __type(key, u32);
+    __type(key, u64);
     __type(value, struct ipt_do_table_args);
     __uint(max_entries, 1024);
 } skbtracer_ipt SEC(".maps");
@@ -460,9 +460,8 @@ filter_netns(struct sk_buff *skb)
 }
 
 static __always_inline bool
-filter_pid()
+filter_pid(u32 pid)
 {
-    u32 pid = bpf_get_current_pid_tgid() >> 32;
     return cfg->pid && cfg->pid != pid;
 }
 

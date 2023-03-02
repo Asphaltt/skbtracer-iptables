@@ -12,9 +12,6 @@ do_trace_skb(struct event_t *event,
     unsigned char *l3_header;
     u8 ip_version, l4_proto;
 
-    if (filter_pid() || filter_netns(skb) || filter_l3_and_l4_info(skb))
-        return false;
-
     event->flags |= SKBTRACER_EVENT_IF;
     set_event_info(skb, event);
     set_pkt_info(skb, &event->pkt_info);
@@ -52,7 +49,11 @@ __ipt_do_table_in(struct pt_regs *ctx,
     const struct nf_hook_state *state,
     struct xt_table *table)
 {
-    u32 pid;
+    u64 pid_tgid;
+    pid_tgid = bpf_get_current_pid_tgid();
+
+    if (filter_pid(pid_tgid>>32) || filter_netns(skb) || filter_l3_and_l4_info(skb))
+        return false;
 
     struct ipt_do_table_args args = {
         .skb = skb,
@@ -61,8 +62,7 @@ __ipt_do_table_in(struct pt_regs *ctx,
     };
 
     args.start_ns = bpf_ktime_get_ns();
-    pid = bpf_get_current_pid_tgid();
-    bpf_map_update_elem(&skbtracer_ipt, &pid, &args, BPF_ANY);
+    bpf_map_update_elem(&skbtracer_ipt, &pid_tgid, &args, BPF_ANY);
 
     return BPF_OK;
 };
@@ -70,16 +70,16 @@ __ipt_do_table_in(struct pt_regs *ctx,
 static __noinline int
 __ipt_do_table_out(struct pt_regs *ctx, uint verdict)
 {
-    u32 pid;
+    u64 pid_tgid;
     u64 ipt_delay;
     struct ipt_do_table_args *args;
 
-    pid = bpf_get_current_pid_tgid();
-    args = bpf_map_lookup_elem(&skbtracer_ipt, &pid);
+    pid_tgid = bpf_get_current_pid_tgid();
+    args = bpf_map_lookup_elem(&skbtracer_ipt, &pid_tgid);
     if (args == NULL)
         return BPF_OK;
 
-    bpf_map_delete_elem(&skbtracer_ipt, &pid);
+    bpf_map_delete_elem(&skbtracer_ipt, &pid_tgid);
 
     struct event_t *event = GET_EVENT_BUF();
     if (!event)

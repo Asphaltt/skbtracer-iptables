@@ -17,8 +17,33 @@
 But, at kernel 5.16, the declarations of `ipt_do_tables` and `ip6t_do_tables`
 changed.
 
-- `ipt_do_tables`: from `unsigned int ipt_do_table(struct sk_buff *skb, const struct nf_hook_state *state, struct xt_table *table)` to `unsigned int ipt_do_table(void *priv, struct sk_buff *skb, const struct nf_hook_state *state)`.
-- `ip6t_do_tables`: from `unsigned int ipt_do_table(void *priv, struct sk_buff *skb, const struct nf_hook_state *state)` to `unsigned int ip6t_do_table(void *priv, struct sk_buff *skb, const struct nf_hook_state *state)`.
+```C
+// from
+
+extern unsigned int ipt_do_table(struct sk_buff *skb,
+         const struct nf_hook_state *state,
+         struct xt_table *table);
+
+// to
+
+extern unsigned int ipt_do_table(void *priv,
+         struct sk_buff *skb,
+         const struct nf_hook_state *state);
+
+// ---
+
+// from
+
+extern unsigned int ip6t_do_table(struct sk_buff *skb,
+          const struct nf_hook_state *state,
+          struct xt_table *table);
+
+// to
+
+extern unsigned int ip6t_do_table(void *priv, struct sk_buff *skb,
+          const struct nf_hook_state *state);
+
+```
 
 As a result, `skbtracer-iptables` has to prepare two versions of eBPF program
 for kprobe on them.
