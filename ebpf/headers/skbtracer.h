@@ -344,7 +344,8 @@ set_iptables_info(struct xt_table *table,
     u64 delay,
     struct iptables_info_t *ipt_info)
 {
-    bpf_probe_read(&ipt_info->tablename, XT_TABLE_MAXNAMELEN, &table->name);
+    if (table)
+        bpf_probe_read(&ipt_info->tablename, XT_TABLE_MAXNAMELEN, &table->name);
     BPF_CORE_READ_INTO(&ipt_info->hook, state, hook);
     BPF_CORE_READ_INTO(&ipt_info->pf, state, pf);
     ipt_info->verdict = verdict;

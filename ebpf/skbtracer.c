@@ -138,3 +138,15 @@ int BPF_KRETPROBE(kr_ipt_do_table, uint ret)
 // {
 //     return __ipt_do_table_out(ctx, ret);
 // }
+
+SEC("kprobe/nf_hook_slow")
+int BPF_KPROBE(k_nf_hook_slow, struct sk_buff *skb, struct nf_hook_state *state)
+{
+	return __ipt_do_table_in(ctx, skb, state, NULL);
+}
+
+SEC("kretprobe/nf_hook_slow")
+int BPF_KRETPROBE(kr_nf_hook_slow, uint ret)
+{
+	return __ipt_do_table_out(ctx, ret);
+}

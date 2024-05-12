@@ -121,20 +121,20 @@ func runEbpf() {
 		log.Printf("Attached kretprobe(ipt_do_table)")
 	}
 
-	if kp, err := link.Kprobe("ip6t_do_table", kIptDoTable, nil); err != nil {
-		log.Printf("Failed to kprobe(ip6t_do_table): %v", err)
+	if kp, err := link.Kprobe("nf_hook_slow", bpfObj.K_nfHookSlow, nil); err != nil {
+		log.Printf("Failed to kprobe(nf_hook_slow): %v", err)
 		return
 	} else {
 		defer kp.Close()
-		log.Printf("Attached kprobe(ip6t_do_table)")
+		log.Printf("Attached kprobe(nf_hook_slow)")
 	}
 
-	if krp, err := link.Kretprobe("ip6t_do_table", bpfObj.KrIptDoTable, nil); err != nil {
-		log.Printf("Failed to kretprobe(ip6t_do_table): %v", err)
+	if krp, err := link.Kretprobe("nf_hook_slow", bpfObj.KrNfHookSlow, nil); err != nil {
+		log.Printf("Failed to kretprobe(nf_hook_slow): %v", err)
 		return
 	} else {
 		defer krp.Close()
-		log.Printf("Attached kretprobe(ip6t_do_table)")
+		log.Printf("Attached kretprobe(nf_hook_slow)")
 	}
 
 	rd, err := perf.NewReader(bpfObj.SkbtracerEvent, cfg.PerCPUBuffer)
